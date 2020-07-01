@@ -11,13 +11,19 @@ output:
 
 普通にCRANから dplyr パッケージをインストールするとバージョン 1.0 になる（2020年7月1日現在）
 
-```{r eval=FALSE}
+
+```r
 install.packages("dplyr")
 ```
 
 インストールされた dplyr パッケージのバージョンを確認
 
-```{r}
+
+```r
 installed.packages()["dplyr", "Version"]
+```
+
+```
+## [1] "1.0.0"
 ```
 
