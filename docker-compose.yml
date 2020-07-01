@@ -1,0 +1,11 @@
+version: "3.7"
+services:
+  rstudio:
+    image: rocker/tidyverse@sha256:2bb5d3ff3f2443f2b17642550724dbbc5b3e06e3b05cecb69e5e7edeb6873bc3 # 4.0.0 (6/30 build)
+    ports:
+      - "8787:8787"
+    environment:
+      - PASSWORD=password
+      - DISABLE_AUTH=true
+    volumes:
+      - .:/home/rstudio/dplyr-v1-excercises

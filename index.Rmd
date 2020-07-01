@@ -1,0 +1,21 @@
+---
+title: "dplyr v1.0 練習帳"
+author: "terashim"
+date: "2020/7/1"
+output: html_document
+---
+
+## パッケージのインストール
+
+普通にCRANから dplyr パッケージをインストールするとバージョン 1.0 になる（2020年7月1日現在）
+
+```{r eval=FALSE}
+install.packages("dplyr")
+```
+
+インストールされた dplyr パッケージのバージョンを確認
+
+```{r}
+installed.packages()["dplyr", "Version"]
+```
+
