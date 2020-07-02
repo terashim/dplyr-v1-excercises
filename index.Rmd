@@ -26,7 +26,7 @@ knitr::knit_hooks$set(output = function(x, options) {
   hook_output(x, options)
 })
 
-# デフォルトのチャンクオプションを設定
+# デフォルトのチャンクオプションを設定!
 knitr::opts_chunk$set(comment = "")
 ```
 
@@ -57,9 +57,8 @@ library(dplyr)
 
 練習用データとして **`airquality`** を使う。
 
-```{r}
-airquality %>% 
-  rmarkdown::paged_table()
+```{r out.lines=13}
+airquality
 ```
 
 ---
