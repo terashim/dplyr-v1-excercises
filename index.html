@@ -740,7 +740,12 @@ airquality_mod</code></pre>
 ## 4     8     8.79            28.9
 ## 5     9    10.2             24.9</code></pre>
 <p>ここで、<code>month</code> によるグループ化が <code>summarise()</code> によって解除される旨の警告メッセージが表示される。 これはバージョン 1.0.0 での変更点である。</p>
+<hr />
 </div>
+</div>
+<div id="グループ化とグループ解除" class="section level2">
+<h2>グループ化とグループ解除</h2>
+<p>ここでグループ化と解除の挙動について少し深入り。</p>
 <div id="グループ化されたデータを表示する" class="section level3">
 <h3>グループ化されたデータを表示する</h3>
 <p>グループ化前</p>
@@ -782,7 +787,7 @@ airquality_mod</code></pre>
 <div id="groups-でグループ化の状態を確認する" class="section level3">
 <h3><code>groups()</code> でグループ化の状態を確認する</h3>
 <p><code>groups()</code> 関数を使うとグループ化の状態が確認できる.</p>
-<p>グループ化しないと⁄き</p>
+<p>グループ化しないとき</p>
 <pre class="r"><code>airquality_mod %&gt;% groups()</code></pre>
 <pre><code>## list()</code></pre>
 <p>列 <code>month</code> でグループ化したとき</p>
@@ -800,6 +805,43 @@ airquality_mod</code></pre>
 ## 
 ## [[2]]
 ## month</code></pre>
+</div>
+<div id="ungroup-でグループ化を解除する" class="section level3">
+<h3><code>ungroup()</code> でグループ化を解除する</h3>
+<p>グループ化されたデータ <code>grouped_data</code> を作る</p>
+<pre class="r"><code>grouped_data &lt;-
+  airquality_mod %&gt;% 
+  group_by(year, month)</code></pre>
+<p>グループ化の状態を表示</p>
+<pre class="r"><code>grouped_data %&gt;% groups()</code></pre>
+<pre><code>## [[1]]
+## year
+## 
+## [[2]]
+## month</code></pre>
+<p><code>ungroup()</code> でグループ化を解除したデータ <code>ungrouped_data</code> を作成</p>
+<pre class="r"><code>ungrouped_data &lt;-
+  grouped_data %&gt;%
+  ungroup()</code></pre>
+<p>グループ化されていないことを確認</p>
+<pre class="r"><code>ungrouped_data %&gt;% groups()</code></pre>
+<pre><code>## list()</code></pre>
+<p>データの中身は最初と変わっていない</p>
+<pre class="r"><code>ungrouped_data</code></pre>
+<pre><code>## # A tibble: 153 x 8
+##    date        year month   day ozone solar_radiation  wind temperature
+##    &lt;date&gt;     &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;           &lt;int&gt; &lt;dbl&gt;       &lt;dbl&gt;
+##  1 1973-05-01  1973     5     1    41             190   7.4        19.4
+##  2 1973-05-02  1973     5     2    36             118   8          22.2
+##  3 1973-05-03  1973     5     3    12             149  12.6        23.3
+##  4 1973-05-04  1973     5     4    18             313  11.5        16.7
+##  5 1973-05-05  1973     5     5    NA              NA  14.3        13.3
+##  6 1973-05-06  1973     5     6    28              NA  14.9        18.9
+##  7 1973-05-07  1973     5     7    23             299   8.6        18.3
+##  8 1973-05-08  1973     5     8    19              99  13.8        15  
+##  9 1973-05-09  1973     5     9     8              19  20.1        16.1
+## 10 1973-05-10  1973     5    10    NA             194   8.6        20.6
+## # … with 143 more rows</code></pre>
 </div>
 <div id="summarise-した後のグルーピングを確認する" class="section level3">
 <h3><code>summarise()</code> した後のグルーピングを確認する</h3>
@@ -837,6 +879,16 @@ airquality_mod</code></pre>
 <p><code>year</code> によるグループ化が解除され、<strong><code>month</code> によるグループ化が残っている</strong></p>
 <p><strong>解除されるグループはグループ化の順序によって変わる.</strong></p>
 </div>
+</div>
+<div id="v1.0新機能-.groups-drop-で-summarise-しながらグループ化を全て解除" class="section level3">
+<h3>【v1.0新機能】 <code>.groups = &quot;drop&quot;</code> で <code>summarise</code> しながらグループ化を全て解除</h3>
+<p><code>summarise()</code> の後にグループ化の状態を残したくないとき、オプションで <code>.groups = &quot;drop&quot;</code> と指定すればすべてのグループ化を解除できるようになった.</p>
+<pre class="r"><code>airquality_mod %&gt;% 
+  group_by(month, year) %&gt;% 
+  summarise(avg_wind = mean(wind), avg_temperature = mean(temperature), .groups = &quot;drop&quot;) %&gt;% 
+  groups()</code></pre>
+<pre><code>## list()</code></pre>
+<p><strong><code>.groups</code> はまだ “実験的な” API という位置づけになっている</strong> ので、今後のバージョンで変更される可能性がある。</p>
 </div>
 </div>
 

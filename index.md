@@ -529,6 +529,12 @@ airquality_mod %>%
 ここで、`month` によるグループ化が `summarise()` によって解除される旨の警告メッセージが表示される。
 これはバージョン 1.0.0 での変更点である。
 
+---
+
+## グループ化とグループ解除
+
+ここでグループ化と解除の挙動について少し深入り。
+
 ### グループ化されたデータを表示する
 
 グループ化前
@@ -554,6 +560,7 @@ airquality_mod
 ## 10 1973-05-10  1973     5    10    NA             194   8.6        20.6
 ## # … with 143 more rows
 ```
+
 グループ化後
 
 
@@ -579,13 +586,14 @@ airquality_mod %>%
 ## 10 1973-05-10  1973     5    10    NA             194   8.6        20.6
 ## # … with 143 more rows
 ```
+
 `gropu_by()` によってデータ本体は変わらず、グループ化されたことを表す情報表示 `# Groups:   month [5]` が出る。
 
 ### `groups()` でグループ化の状態を確認する
 
 `groups()` 関数を使うとグループ化の状態が確認できる.
 
-グループ化しないと⁄き
+グループ化しないとき
 
 
 ```r
@@ -625,6 +633,74 @@ airquality_mod %>%
 ## 
 ## [[2]]
 ## month
+```
+
+### `ungroup()` でグループ化を解除する
+
+グループ化されたデータ `grouped_data` を作る
+
+
+```r
+grouped_data <-
+  airquality_mod %>% 
+  group_by(year, month)
+```
+
+グループ化の状態を表示
+
+
+```r
+grouped_data %>% groups()
+```
+
+```
+## [[1]]
+## year
+## 
+## [[2]]
+## month
+```
+`ungroup()` でグループ化を解除したデータ `ungrouped_data` を作成
+
+
+```r
+ungrouped_data <-
+  grouped_data %>%
+  ungroup()
+```
+
+グループ化されていないことを確認
+
+
+```r
+ungrouped_data %>% groups()
+```
+
+```
+## list()
+```
+データの中身は最初と変わっていない
+
+
+```r
+ungrouped_data
+```
+
+```
+## # A tibble: 153 x 8
+##    date        year month   day ozone solar_radiation  wind temperature
+##    <date>     <dbl> <int> <int> <int>           <int> <dbl>       <dbl>
+##  1 1973-05-01  1973     5     1    41             190   7.4        19.4
+##  2 1973-05-02  1973     5     2    36             118   8          22.2
+##  3 1973-05-03  1973     5     3    12             149  12.6        23.3
+##  4 1973-05-04  1973     5     4    18             313  11.5        16.7
+##  5 1973-05-05  1973     5     5    NA              NA  14.3        13.3
+##  6 1973-05-06  1973     5     6    28              NA  14.9        18.9
+##  7 1973-05-07  1973     5     7    23             299   8.6        18.3
+##  8 1973-05-08  1973     5     8    19              99  13.8        15  
+##  9 1973-05-09  1973     5     9     8              19  20.1        16.1
+## 10 1973-05-10  1973     5    10    NA             194   8.6        20.6
+## # … with 143 more rows
 ```
 
 ### `summarise()` した後のグルーピングを確認する
@@ -695,4 +771,21 @@ airquality_mod %>%
 
 **解除されるグループはグループ化の順序によって変わる.**
 
+### 【v1.0新機能】 `.groups = "drop"` で `summarise` しながらグループ化を全て解除
+
+`summarise()` の後にグループ化の状態を残したくないとき、オプションで `.groups = "drop"` と指定すればすべてのグループ化を解除できるようになった. 
+
+
+```r
+airquality_mod %>% 
+  group_by(month, year) %>% 
+  summarise(avg_wind = mean(wind), avg_temperature = mean(temperature), .groups = "drop") %>% 
+  groups()
+```
+
+```
+## list()
+```
+
+**`.groups` はまだ "実験的な" API という位置づけになっている** ので、今後のバージョンで変更される可能性がある。
 

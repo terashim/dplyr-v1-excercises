@@ -247,6 +247,12 @@ airquality_mod %>%
 ここで、`month` によるグループ化が `summarise()` によって解除される旨の警告メッセージが表示される。
 これはバージョン 1.0.0 での変更点である。
 
+---
+
+## グループ化とグループ解除
+
+ここでグループ化と解除の挙動について少し深入り。
+
 ### グループ化されたデータを表示する
 
 グループ化前
@@ -254,19 +260,21 @@ airquality_mod %>%
 ```{r}
 airquality_mod
 ```
+
 グループ化後
 
 ```{r}
 airquality_mod %>% 
   group_by(month)
 ```
+
 `gropu_by()` によってデータ本体は変わらず、グループ化されたことを表す情報表示 `# Groups:   month [5]` が出る。
 
 ### `groups()` でグループ化の状態を確認する
 
 `groups()` 関数を使うとグループ化の状態が確認できる.
 
-グループ化しないと⁄き
+グループ化しないとき
 
 ```{r}
 airquality_mod %>% groups()
@@ -286,6 +294,40 @@ airquality_mod %>%
 airquality_mod %>% 
   group_by(year, month) %>%
   groups()
+```
+
+### `ungroup()` でグループ化を解除する
+
+グループ化されたデータ `grouped_data` を作る
+
+```{r}
+grouped_data <-
+  airquality_mod %>% 
+  group_by(year, month)
+```
+
+グループ化の状態を表示
+
+```{r}
+grouped_data %>% groups()
+```
+`ungroup()` でグループ化を解除したデータ `ungrouped_data` を作成
+
+```{r}
+ungrouped_data <-
+  grouped_data %>%
+  ungroup()
+```
+
+グループ化されていないことを確認
+
+```{r}
+ungrouped_data %>% groups()
+```
+データの中身は最初と変わっていない
+
+```{r}
+ungrouped_data
 ```
 
 ### `summarise()` した後のグルーピングを確認する
@@ -327,4 +369,16 @@ airquality_mod %>%
 
 **解除されるグループはグループ化の順序によって変わる.**
 
+### 【v1.0新機能】 `.groups = "drop"` で `summarise` しながらグループ化を全て解除
+
+`summarise()` の後にグループ化の状態を残したくないとき、オプションで `.groups = "drop"` と指定すればすべてのグループ化を解除できるようになった. 
+
+```{r}
+airquality_mod %>% 
+  group_by(month, year) %>% 
+  summarise(avg_wind = mean(wind), avg_temperature = mean(temperature), .groups = "drop") %>% 
+  groups()
+```
+
+**`.groups` はまだ "実験的な" API という位置づけになっている** ので、今後のバージョンで変更される可能性がある。
 
