@@ -7,6 +7,8 @@ output:
     variant: markdown_github
 ---
 
+# 2-1 集計
+
 ```{r setup, include=FALSE}
 # カスタムチャンクオプション out.lines を定義
 # 参考 https://bookdown.org/yihui/rmarkdown-cookbook/hook-truncate.html

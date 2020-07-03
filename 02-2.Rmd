@@ -7,6 +7,8 @@ output:
     variant: markdown_github
 ---
 
+# 2-2 グループ化とグループ解除
+
 ここでグループ化と解除の挙動について少し深入り。
 
 ```{r setup, include=FALSE}

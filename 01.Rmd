@@ -7,6 +7,8 @@ output:
     variant: markdown_github
 ---
 
+# 01 select と mutate
+
 ```{r setup, include=FALSE}
 # カスタムチャンクオプション out.lines を定義
 # 参考 https://bookdown.org/yihui/rmarkdown-cookbook/hook-truncate.html
