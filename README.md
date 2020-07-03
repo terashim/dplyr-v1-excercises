@@ -1,7 +1,7 @@
-dplyr ver1 練習帳
+dplyr v1.0 練習帳
 ==========
 
-dplyr のバージョン 1.0.0 が公式リリースされたとのことなので練習する
+dplyr バージョン 1.0.0 が正式にリリースされたので練習
 
 ## 参考
 
@@ -22,12 +22,12 @@ dplyr のバージョン 1.0.0 が公式リリースされたとのことなの�
 
 ## Docker Compose によるローカル RStudio Server 環境
 
-`docker-compose.yml` に記述されたDockerコンテナの起動設定が利用できる。
+[`docker-compose.yml`](docker-compose.yml) に記述されたDockerコンテナの起動設定が利用できる。
 この設定では Docker イメージ `rocker/tidyverse:4.0.0` （2020/6/30 ビルド）を使用する。Rのバージョンは 4.0.0 となる。
 
 ### 起動
 
-このディレクトリで以下を実行すると Docker コンテナが起動する
+このREADMEファイルがあるディレクトリで以下を実行すると Docker コンテナが起動する
 
 ```sh
 docker-compose up -d
@@ -42,7 +42,8 @@ docker-compose up -d
 
 ### 停止
 
-このディレクトリで以下を実行すると Docker コンテナが停止する
+このREADMEファイルがあるディレクトリで以下を実行すると Docker コンテナが停止する。
+コンテナ内の マウントされていないファイルは消えてしまうので注意。
 
 ```sh
 docker-compose down
