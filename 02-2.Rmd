@@ -190,5 +190,6 @@ airquality_mod %>%
   groups()
 ```
 
-**`.groups` はまだ "実験的な" API という位置づけになっている** ので、今後のバージョンで変更される可能性がある。
+バージョン 1.0.0 では、
+**`.groups` はまだ実験的 ([experimental](https://www.tidyverse.org/lifecycle/#experimental)) な API という位置づけになっている** ので、今後のバージョンで変更される可能性がある。
 
