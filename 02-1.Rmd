@@ -1,0 +1,88 @@
+---
+title: "dplyr ver1 練習帳 - 2-1 集計"
+author: "terashim"
+date: "2020/7/1"
+output: 
+  md_document:
+    variant: markdown_github
+---
+
+```{r setup, include=FALSE}
+# カスタムチャンクオプション out.lines を定義
+# 参考 https://bookdown.org/yihui/rmarkdown-cookbook/hook-truncate.html
+# save the built-in output hook
+hook_output <- knitr::knit_hooks$get("output")
+
+# set a new output hook to truncate text output
+knitr::knit_hooks$set(output = function(x, options) {
+  if (!is.null(n <- options$out.lines)) {
+    x <- xfun::split_lines(x)
+    if (length(x) > n) {
+      # truncate the output
+      x <- c(head(x, n/2), '....', tail(x, n/2 + 1))
+    }
+    x <- paste(x, collapse = "\n")
+  }
+  hook_output(x, options)
+})
+```
+
+
+パッケージのロード
+
+```{r}
+library(dplyr)
+```
+
+## 練習用データ
+
+`airquality` を `select()` と `mutate()` で整形したデータ **`airquality_mod`** を用意する. また data.frame を tibble にする.
+
+```{r}
+airquality_mod <-
+  airquality %>% 
+  mutate(
+    year = 1973,
+    date = as.Date(sprintf("%04d-%02d-%02d", year, Month, Day)),
+    temperature = (Temp - 32) / 1.8
+  ) %>% 
+  select(
+    date,
+    year,
+    month = Month,
+    day = Day,
+    ozone = Ozone,
+    solar_radiation = Solar.R,
+    wind = Wind, 
+    temperature
+  ) %>% 
+  as_tibble()
+
+airquality_mod
+```
+
+## `summarise()` で全体の平均値を取る
+
+`wind`, `temperature` の平均値を計算して `avg_wind`, `avg_temperature` とする.
+
+```{r}
+airquality_mod %>% 
+  summarise(
+    avg_wind = mean(wind),
+    avg_temperature = mean(temperature)
+  )
+```
+
+## `group_by()` と `summarise()` でグループごとに平均値を取る
+
+`month` でグループ化してから `wind`, `temperature` の平均値を計算する
+
+```{r}
+airquality_mod %>% 
+  group_by(month) %>% 
+  summarise(avg_wind = mean(wind), avg_temperature = mean(temperature))
+```
+
+ここで、`summarise()` によって `month` によるグループ化が解除される旨の警告メッセージが表示される。
+これはバージョン 1.0.0 での変更点である。
+

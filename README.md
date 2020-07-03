@@ -3,10 +3,20 @@ dplyr ver1 練習帳
 
 dplyr のバージョン 1.0.0 が公式リリースされたとのことなので練習する
 
+## 参考
+
 - Hadley Wickham [dplyr 1.0.0 available now! - Tidyverse](https://www.tidyverse.org/blog/2020/06/dplyr-1-0-0/)
 - Romain François [dplyr 1.0.0 - Speaker Deck](https://speakerdeck.com/romainfrancois/dplyr-1-dot-0-0)
 - @y__mattu [dplyr 1.0.0の新機能 / dplyr 1.0.0 - Speaker Deck](https://speakerdeck.com/y__mattu/dplyr-1-dot-0-0)
 - yutannihilation [dplyr 1.0.0 を使ってみる: summarise() - Technically, technophobic.](https://notchained.hatenablog.com/entry/2020/06/28/134109)
+
+---
+
+## もくじ
+
+- [1 select と mutate](01.md)
+- [2-1](02-1.md)
+- [2-2](02-2.md)
 
 ---
 

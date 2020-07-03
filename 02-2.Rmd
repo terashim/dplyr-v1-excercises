@@ -1,0 +1,192 @@
+---
+title: "dplyr ver1 練習帳 - 2-2 グループ化とグループ解除"
+author: "terashim"
+date: "2020/7/1"
+output:
+  md_document:
+    variant: markdown_github
+---
+
+ここでグループ化と解除の挙動について少し深入り。
+
+```{r setup, include=FALSE}
+# カスタムチャンクオプション out.lines を定義
+# 参考 https://bookdown.org/yihui/rmarkdown-cookbook/hook-truncate.html
+# save the built-in output hook
+hook_output <- knitr::knit_hooks$get("output")
+
+# set a new output hook to truncate text output
+knitr::knit_hooks$set(output = function(x, options) {
+  if (!is.null(n <- options$out.lines)) {
+    x <- xfun::split_lines(x)
+    if (length(x) > n) {
+      # truncate the output
+      x <- c(head(x, n/2), '....', tail(x, n/2 + 1))
+    }
+    x <- paste(x, collapse = "\n")
+  }
+  hook_output(x, options)
+})
+```
+
+### 準備
+
+パッケージのロード
+
+```{r}
+library(dplyr)
+```
+
+練習用データ
+
+
+```{r}
+airquality_mod <-
+  airquality %>% 
+  mutate(
+    year = 1973,
+    date = as.Date(sprintf("%04d-%02d-%02d", year, Month, Day)),
+    temperature = (Temp - 32) / 1.8
+  ) %>% 
+  select(
+    date,
+    year,
+    month = Month,
+    day = Day,
+    ozone = Ozone,
+    solar_radiation = Solar.R,
+    wind = Wind, 
+    temperature
+  ) %>% 
+  as_tibble()
+```
+
+### グループ化されたデータを表示する
+
+グループ化前
+
+```{r}
+airquality_mod
+```
+
+グループ化後
+
+```{r}
+airquality_mod %>% 
+  group_by(month)
+```
+
+`gropu_by()` によってデータ本体は変わらず、グループ化されたことを表す情報表示 `# Groups:   month [5]` が出る。
+
+### `groups()` でグループ化の状態を確認する
+
+`groups()` 関数を使うとグループ化の状態が確認できる.
+
+グループ化しないとき
+
+```{r}
+airquality_mod %>% groups()
+```
+
+列 `month` でグループ化したとき
+
+```{r}
+airquality_mod %>% 
+  group_by(month) %>%
+  groups()
+```
+
+列 `year` と `month` でグループ化したとき
+
+```{r}
+airquality_mod %>% 
+  group_by(year, month) %>%
+  groups()
+```
+
+### `ungroup()` でグループ化を解除する
+
+グループ化されたデータ `grouped_data` を作る
+
+```{r}
+grouped_data <-
+  airquality_mod %>% 
+  group_by(year, month)
+```
+
+グループ化の状態を表示
+
+```{r}
+grouped_data %>% groups()
+```
+`ungroup()` でグループ化を解除したデータ `ungrouped_data` を作成
+
+```{r}
+ungrouped_data <-
+  grouped_data %>%
+  ungroup()
+```
+
+グループ化されていないことを確認
+
+```{r}
+ungrouped_data %>% groups()
+```
+データの中身は最初と変わっていない
+
+```{r}
+ungrouped_data
+```
+
+### `summarise()` した後のグルーピングを確認する
+
+ここで `summarise()` によるグループ化解除の挙動を実験する
+
+#### (1) `month` でグループ化した後、 `summarise()` する
+
+```{r}
+airquality_mod %>% 
+  group_by(month) %>% 
+  summarise(avg_wind = mean(wind), avg_temperature = mean(temperature)) %>% 
+  groups()
+```
+
+メッセージの通り、**グループ化が解除されている.**
+
+#### (2) `year`, `month` でグループ化した後、 `summarise()` する
+
+```{r}
+airquality_mod %>% 
+  group_by(year, month) %>% 
+  summarise(avg_wind = mean(wind), avg_temperature = mean(temperature)) %>% 
+  groups()
+```
+
+`month` によるグループ化が解除され、**`year` によるグループ化が残っている**
+
+#### (3) `month`, `year` の順でグループ化した後、 `summarise()` する
+
+```{r}
+airquality_mod %>% 
+  group_by(month, year) %>% 
+  summarise(avg_wind = mean(wind), avg_temperature = mean(temperature)) %>% 
+  groups()
+```
+
+`year` によるグループ化が解除され、**`month` によるグループ化が残っている**
+
+**解除されるグループはグループ化の順序によって変わる.**
+
+### 【v1.0新機能】 `.groups = "drop"` で `summarise` しながらグループ化を全て解除
+
+`summarise()` の後にグループ化の状態を残したくないとき、オプションで `.groups = "drop"` と指定すればすべてのグループ化を解除できるようになった. 
+
+```{r}
+airquality_mod %>% 
+  group_by(month, year) %>% 
+  summarise(avg_wind = mean(wind), avg_temperature = mean(temperature), .groups = "drop") %>% 
+  groups()
+```
+
+**`.groups` はまだ "実験的な" API という位置づけになっている** ので、今後のバージョンで変更される可能性がある。
+
