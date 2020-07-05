@@ -34,57 +34,51 @@ knitr::knit_hooks$set(output = function(x, options) {
 
 ```{r}
 library(dplyr)
+library(nycflights13)
 ```
 
 ## 練習用データ
 
-`airquality` を `select()` と `mutate()` で整形したデータ **`airquality_mod`** を用意する. また data.frame を tibble にする.
+`nycflights13` の `flights` を使用する
 
 ```{r}
-airquality_mod <-
-  airquality %>% 
-  mutate(
-    year = 1973,
-    date = as.Date(sprintf("%04d-%02d-%02d", year, Month, Day)),
-    temperature = (Temp - 32) / 1.8
-  ) %>% 
-  select(
-    date,
-    year,
-    month = Month,
-    day = Day,
-    ozone = Ozone,
-    solar_radiation = Solar.R,
-    wind = Wind, 
-    temperature
-  ) %>% 
-  as_tibble()
-
-airquality_mod
+tibble::glimpse(flights)
 ```
+
+
+```{r}
+flights %>% head(10)
+```
+
 
 ## `summarise()` で全体の平均値を取る
 
-`wind`, `temperature` の平均値を計算して `avg_wind`, `avg_temperature` とする.
+出発遅延時間 `dep_delay`, 距離 `distance`, 飛行時間 `air_time`
+の平均値を計算して、それぞれ列名 `avg_dep_delay`, `avg_distance`, `avg_air_time` とする
 
 ```{r}
-airquality_mod %>% 
+flights %>% 
   summarise(
-    avg_wind = mean(wind),
-    avg_temperature = mean(temperature)
+    avg_distance = mean(distance, na.rm = TRUE),
+    avg_dep_delay = mean(dep_delay, na.rm = TRUE),
+    avg_air_time = mean(air_time, na.rm = TRUE)
   )
 ```
 
 ## `group_by()` と `summarise()` でグループごとに平均値を取る
 
-`month` でグループ化してから `wind`, `temperature` の平均値を計算する
+航空会社 `carrier` でグループ化してから出発遅延時間 `dep_delay`, 距離 `distance`, 飛行時間 `air_time` の平均値を計算する
 
-```{r}
-airquality_mod %>% 
-  group_by(month) %>% 
-  summarise(avg_wind = mean(wind), avg_temperature = mean(temperature))
+```{r out.lines=17}
+flights %>% 
+  group_by(carrier) %>% 
+  summarise(
+    avg_distance = mean(distance, na.rm = TRUE),
+    avg_dep_delay = mean(dep_delay, na.rm = TRUE),
+    avg_air_time = mean(air_time, na.rm = TRUE)
+  )
 ```
 
-ここで、`summarise()` によって `month` によるグループ化が解除される旨の警告メッセージが表示される。
-これはバージョン 1.0.0 での変更点である。
+ここで、列 `carrier` によるグループ化が `summarise()` によって解除される旨の警告メッセージが表示される。
+これは `dplyr` バージョン 1.0.0 での変更点である。
 

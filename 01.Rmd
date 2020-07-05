@@ -54,10 +54,16 @@ library(dplyr)
 
 ## 練習用データ
 
-練習用データとして **`airquality`** を使う。
+練習用データとして **`nycflights13`** パッケージの `flights` データを使う。もしまだなら、パッケージをインストールする
+
+```{r eval=FALSE}
+install.packages("nycflights13")
+```
+
 
 ```{r out.lines=13}
-airquality
+library(nycflights13)
+flights
 ```
 
 ---
@@ -69,35 +75,58 @@ airquality
 select で列を選択
 
 ```{r out.lines=13}
-airquality %>% 
-  select(Solar.R, Temp, Month, Day)
+flights %>% 
+  select(year, month, day, dep_time, arr_time, carrier, flight, tailnum, origin, dest, air_time, distance)
 ```
 
 列名は文字列でもOK
 
 ```{r out.lines=13}
-airquality %>% 
-  select("Solar.R", "Temp", "Month", "Day")
+flights %>% 
+  select("year", "month", "day", "dep_time", "arr_time", "carrier", "flight", "tailnum", "origin", "dest", "air_time", "distance")
 ```
+
 文字列ベクトルでもOK
 
 ```{r out.lines=13}
-airquality %>% 
-  select(c("Solar.R", "Temp", "Month", "Day"))
+flights %>% 
+  select(c("year", "month", "day", "dep_time", "arr_time", "tailnum", "origin", "dest", "air_time", "distance"))
 ```
 
 ### select() で列の並べ替え
 
 ```{r out.lines=13}
-airquality %>% 
-  select(Month, Day, Solar.R, Temp)
+flights %>% 
+  select(year, month, day, carrier, flight, tailnum, origin, dest, distance, dep_time, arr_time, air_time)
 ```
 
 ### select() で列名変更
 
+列名を次のように変更する
+
+- `carrier` を `carrier_code` に
+- `flight` を `flight_number` に
+- `tailnum` を `aircraft_registration` に
+- `dest` を `destination` に
+- `dep_time` を `departure_time` に
+- `arr_time` を `arrival_time` に
+
 ```{r out.lines=13}
-airquality %>% 
-  select(month = Month, day = Day, solar_radiation = Solar.R, temperature = Temp)
+flights %>% 
+  select(
+    year,
+    month,
+    day,
+    carrier_code = carrier,
+    flight_number = flight,
+    aircraft_registration = tailnum,
+    origin,
+    destination = dest,
+    distance,
+    departure_time = dep_time,
+    arrival_time = arr_time,
+    air_time
+  )
 ```
 
 ---
@@ -106,90 +135,75 @@ airquality %>%
 
 ### mutate で列の追加
 
-このデータは1973年の観測値なので、**定数値 1973 の入った列 year を付け加える**
+`year`, `month`, `day` を元に **日付列 `date` を作成して末尾に追加する**
 
 ```{r out.lines=13}
-airquality %>% 
-  mutate(
-    year = 1973
-  )
-```
-
-年 year を作り、さらに月 Month, 日 Day の列と合わせて **日付の列 date を作る**
-
-```{r out.lines=13}
-airquality %>% 
-  mutate(
-    year = 1973,
-    date = as.Date(sprintf("%04d-%02d-%02d", year, Month, Day))
-  )
-```
-
-列 Temp は華氏温度で表した気温を表す。
-この列を元に **摂氏温度に変換した列 temperature を作って付け加える**
-
-```{r out.lines=13}
-airquality %>% 
-  mutate(
-    temperature = (Temp - 32) / 1.8
-  )
-```
-
-列 Wind は mph (マイル毎時) 単位で表した風速を表す。
-この列を元に **メートル毎秒単位に変換した列 wind を作って付け加える**
-
-```{r out.lines=13}
-airquality %>% 
-  mutate(
-    wind = Wind * 1609 / 3600
-  )
+flights %>% 
+  mutate(date = as.Date(sprintf("%04d-%02d-%02d", year, month, day)))
 ```
 
 ### mutate() で列を変更
 
-気温 Temp を華氏温度から摂氏温度に変換して **上書き** する
+列 `distance` はマイル単位で表した距離を表す。この列をキロメートル単位に変換する。
 
 ```{r out.lines=13}
-airquality %>% 
+flights %>% 
   mutate(
-    Temp = (Temp - 32) / 1.8
+    distance = distance / 1.609
   )
 ```
-風速 Wind をマイル毎時からメートル毎秒に変換して **上書き** する
+
+列 `air_time` は分単位で表した時間を表す。この列を時間単位に変換する。
 
 ```{r out.lines=13}
-airquality %>% 
+flights %>% 
   mutate(
-    Wind = Wind * 1609 / 3600
+    air_time = air_time / 60
   )
 ```
 
 ### select() と mutate() を組み合わせて使う
 
-- 月 `Month`, 日 `Day` を元に日付の列 `date` を作る
-- 華氏気温 `Temp` から摂氏気温の列 `temperaure` を作る
-- マイル毎時単位の風速 `Wind` からメートル毎秒単位の風速 `wind` を作る
-- 列名 `Month`, `Day`, `Ozone` を小文字に変更する
-- 列名 `Solar.R` を `solar_radiation` に変更する
-- 列を `date`, `month`, `day`, `ozone`, `solar_radiation`, `wind`, `temperature` の順に並べる
+- 年 `year` 月 `month`, 日 `day` を元に日付の列 `date` を作る
+- マイル単位の距離 `distance` をキロメートル単位に変更する
+- 分単位の時間 `air_time` を時間単位に変更する
+- 列名を次のように変更する:
+    - `carrier` を `carrier_code` に
+    - `flight` を `flight_number` に
+    - `tailnum` を `aircraft_registration` に
+    - `dest` を `destination` に
+    - `dep_time` を `departure_time` に
+    - `arr_time` を `arrival_time` に
+- 列を次の順に並べる:
+    - `date`
+    - `carrier_code`
+    - `flight_number`
+    - `aircraft_registration`
+    - `origin`
+    - `destination`
+    - `distance`
+    - `departure_time`
+    - `arrival_time`
+    - `air_time`
 
 ```{r out.lines=13}
-airquality %>% 
+flights %>% 
   mutate(
-    year = 1973,
-    date = as.Date(sprintf("%04d-%02d-%02d", year, Month, Day)),
-    temperature = (Temp - 32) / 1.8,
-    wind = Wind * 1609 / 3600
+    date = as.Date(sprintf("%04d-%02d-%02d", year, month, day)),
+    distance = distance / 1.609,
+    air_time = air_time / 60
   ) %>% 
   select(
     date,
-    year,
-    month = Month,
-    day = Day,
-    ozone = Ozone,
-    solar_radiation = Solar.R,
-    wind, 
-    temperature
+    carrier_code = carrier,
+    flight_number = flight,
+    aircraft_registration = tailnum,
+    origin,
+    destination = dest,
+    distance,
+    departure_time = dep_time,
+    arrival_time = arr_time,
+    air_time
   )
 ```
 
