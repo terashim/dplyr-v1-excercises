@@ -1,0 +1,95 @@
+---
+title: "dplyr ver1 練習帳 - 5 `left_join`, `inner_join` によるデータ結合"
+author: "terashim"
+date: "2020/7/5"
+output:
+  md_document:
+    variant: gfm
+---
+
+パッケージをロード
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(nycflights13)
+```
+
+ここでは航空便データ `flights` と航空機データ `planes` の２つのデータフレームを使用する。
+
+```{r}
+flights
+```
+
+```{r}
+planes
+```
+
+---
+
+## left_join() - 左結合
+
+SQL の LEFT JOIN に相当する。
+
+`flights` に対して `planes` を左結合する。その際、列 `tailnum` (機体番号) を結合キーとする。
+
+```{r}
+flights %>% 
+  left_join(planes, by = "tailnum")
+```
+このとき航空便の年 `fligts$year` と航空機の製造年 `planes$year` で列名が重複している。
+これを区別するためのサフィックス `.x`, `.y` が自動的に付与される。
+
+```{r}
+flights %>% 
+  left_join(planes, by = "tailnum") %>% 
+  select(year.x, year.y)
+```
+
+結合後に `year` が存在すると思って扱ってしまいエラーになることが多い
+
+```{r error=TRUE}
+flights %>% 
+  left_join(planes, by = "tailnum") %>% 
+  select(year)
+```
+
+左結合なので、航空便データの機体番号 `flights$tailnum` に対して航空機データの機体番号 `planes$tailnum` が見つからない箇所については、航空便データ `flights` の行は全て残り航空機データ `planes` 由来の列は空欄（`NA`）となる。
+
+アメリカン航空 (コード "AA") については航空便データの `flights$tailnum` に収録されている値が
+機体番号ではなく fleet number になっているため、航空機データ `planes` との照合ができない（ヘルプ `help(planes)` に説明あり）。そのため、 `left_join()` で結合すると `planes` 由来の列は多くの値が `NA` になる。
+
+```{r}
+flights %>% 
+  left_join(planes, by = "tailnum") %>% 
+  select(carrier, flight, tailnum, manufacturer, model) %>% 
+  filter(carrier == "AA")
+```
+
+---
+
+## inner_join() - 内部結合
+
+SQL の INNER JOIN に相当する。
+
+２つのデータセット `flights` と `planes` とを内部結合する。結合キーには `tailnum` を使用する:
+
+```{r}
+flights %>% 
+  inner_join(planes, by = "tailnum")
+```
+
+内部結合なので `flights$tailnum` と `planes$tailnum` の双方に同じ値が存在する行のみが残る。
+
+つまり、内部結合では航空便データ `flights` の機体番号 `tailnum` が航空機データ `planes` の中に見つからない場合、その行は残らない。
+この例では元のデータ `flights` 336,776 行から 284,170 行に行数が減少している。
+
+---
+
+## その他の `_join` 関数
+
+- `right_join(x, y)` --- `left_join()` とは逆に、右辺のデータ `y` にキーが存在する行だけを残す。SQL の RIGHT JOIN に相当。
+- `full_join(x, y)` --- 両辺 `x`, `y` の片方にしかキーが存在しなくてもすべての行を残す。SQL の FULL JOIN に相当。
+- `semi_join(x, y)` --- `x` のうち、`y` にキーが存在する行だけを残す。`left_join()` に似ているが `y` の列を結合しない。
+- `anti_join(x, y)` --- `x` のうち、`y` にキーが存在しない行だけを残す。
+
+これらの関数はあまり使わない。

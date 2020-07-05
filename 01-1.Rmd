@@ -1,34 +1,11 @@
 ---
-title: "dplyr ver1 練習帳 - 01 select と mutate"
+title: "dplyr ver1 練習帳 - 1-1 select と mutate"
 author: "terashim"
 date: "2020/7/1"
 output: 
   md_document:
-    variant: markdown_github
+    variant: gfm
 ---
-
-# 01 select と mutate
-
-```{r setup, include=FALSE}
-# カスタムチャンクオプション out.lines を定義
-# 参考 https://bookdown.org/yihui/rmarkdown-cookbook/hook-truncate.html
-# save the built-in output hook
-hook_output <- knitr::knit_hooks$get("output")
-
-# set a new output hook to truncate text output
-knitr::knit_hooks$set(output = function(x, options) {
-  if (!is.null(n <- options$out.lines)) {
-    x <- xfun::split_lines(x)
-    if (length(x) > n) {
-      # truncate the output
-      x <- c(head(x, n/2), '....', tail(x, n/2 + 1))
-    }
-    x <- paste(x, collapse = "\n")
-  }
-  hook_output(x, options)
-})
-```
-
 
 ## パッケージのインストール
 
@@ -61,7 +38,7 @@ install.packages("nycflights13")
 ```
 
 
-```{r out.lines=13}
+```{r}
 library(nycflights13)
 flights
 ```
@@ -72,46 +49,50 @@ flights
 
 ### select() で列選択
 
-select で列を選択
+`select()` はデータフレーム列を選択する関数で、SQLのSELECT文に相当する。
 
-```{r out.lines=13}
+19列のデータフレーム `flights` から12列を選択する:
+
+```{r}
 flights %>% 
   select(year, month, day, dep_time, arr_time, carrier, flight, tailnum, origin, dest, air_time, distance)
 ```
 
 列名は文字列でもOK
 
-```{r out.lines=13}
+```{r}
 flights %>% 
   select("year", "month", "day", "dep_time", "arr_time", "carrier", "flight", "tailnum", "origin", "dest", "air_time", "distance")
 ```
 
 文字列ベクトルでもOK
 
-```{r out.lines=13}
+```{r}
 flights %>% 
   select(c("year", "month", "day", "dep_time", "arr_time", "tailnum", "origin", "dest", "air_time", "distance"))
 ```
 
 ### select() で列の並べ替え
 
-```{r out.lines=13}
+列名の指定順によって列順を変えることもできる
+
+```{r}
 flights %>% 
   select(year, month, day, carrier, flight, tailnum, origin, dest, distance, dep_time, arr_time, air_time)
 ```
 
 ### select() で列名変更
 
-列名を次のように変更する
+列を選択すると同時に、列名を次のように変更する:
 
-- `carrier` を `carrier_code` に
-- `flight` を `flight_number` に
-- `tailnum` を `aircraft_registration` に
-- `dest` を `destination` に
-- `dep_time` を `departure_time` に
-- `arr_time` を `arrival_time` に
+- `carrier` を `carrier_code` に変更
+- `flight` を `flight_number` に変更
+- `tailnum` を `aircraft_registration` に変更
+- `dest` を `destination` に変更
+- `dep_time` を `departure_time` に変更
+- `arr_time` を `arrival_time` に変更
 
-```{r out.lines=13}
+```{r}
 flights %>% 
   select(
     year,
@@ -133,11 +114,14 @@ flights %>%
 
 ## mutate() - 列の追加・列の変更
 
+`mutate()` は新しい列を追加したりもとの列を変更したりするのに使用する。
+SQLではこれもSELECTで表されるが、`dplyr` では列の選択 `select()` と区別する。
+
 ### mutate で列の追加
 
 `year`, `month`, `day` を元に **日付列 `date` を作成して末尾に追加する**
 
-```{r out.lines=13}
+```{r}
 flights %>% 
   mutate(date = as.Date(sprintf("%04d-%02d-%02d", year, month, day)))
 ```
@@ -146,7 +130,7 @@ flights %>%
 
 列 `distance` はマイル単位で表した距離を表す。この列をキロメートル単位に変換する。
 
-```{r out.lines=13}
+```{r}
 flights %>% 
   mutate(
     distance = distance / 1.609
@@ -155,7 +139,7 @@ flights %>%
 
 列 `air_time` は分単位で表した時間を表す。この列を時間単位に変換する。
 
-```{r out.lines=13}
+```{r}
 flights %>% 
   mutate(
     air_time = air_time / 60
@@ -186,7 +170,7 @@ flights %>%
     - `arrival_time`
     - `air_time`
 
-```{r out.lines=13}
+```{r}
 flights %>% 
   mutate(
     date = as.Date(sprintf("%04d-%02d-%02d", year, month, day)),

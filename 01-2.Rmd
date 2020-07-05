@@ -1,0 +1,78 @@
+---
+title: "dplyr ver1 練習帳 - 1-2 select の仲間 - rename と relocate"
+author: "terashim"
+date: "2020/7/5"
+output: 
+  md_document:
+    variant: markdown_github
+---
+
+パッケージをロードする
+
+```{r}
+library(dplyr)
+library(nycflights13)
+```
+
+引き続きサンプルデータとして `flights` を使用する
+
+```{r}
+flights
+```
+
+---
+
+## rename() で列名変更
+
+`select()` では後に残したいすべての列を指定する必要がある。
+
+**特定の列について列名を変更し、その他すべての列をそのまま残したい場合** は、`select()` よりも `rename()` のほうが便利である。
+
+例: 列名 `dep_time` を `departure_time` に変更し、その他の列はすべてそのまま残す
+
+```{r}
+flights %>% 
+  rename(departure_time = dep_time)
+```
+
+`select()` と比較すると
+
+```{r}
+flights %>% 
+  select(departure_time = dep_time)
+```
+
+のように、 `select()` の場合は指定しなかった列は残らない。
+
+## 【v1.0新機能】 relocate() による列順変更
+
+**特定の列だけ先頭に移動し、その他すべての列をそのまま残ししたい場合** は、`select()` よりも `relocate()` 関数が便利である。
+この関数は `dplyr` バージョン 1.0.0 で追加された。
+
+例えば、列 `carrier` を先頭に移動し、その他の列をそのまま残したい場合は以下のようにする:
+
+```{r}
+flights %>% 
+  relocate(carrier)
+```
+
+バージョン 0.8 以前では、同じことを `everything()` で実現していた
+
+```{r}
+flights %>% 
+  select(carrier, everything())
+```
+
+## relocate のオプション `.after`, `.before`
+
+列 `carrier` を列 `day` の次の位置に移動
+
+```{r}
+flights %>% relocate(carrier, .after = day)
+```
+
+列 `sched_dep_time` を列 `dep_time` の手前の位置に移動
+
+```{r}
+flights %>% relocate(sched_dep_time, .before = dep_time)
+```

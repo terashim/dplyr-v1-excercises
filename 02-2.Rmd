@@ -4,12 +4,12 @@ author: "terashim"
 date: "2020/7/1"
 output:
   md_document:
-    variant: markdown_github
+    variant: gfm
 ---
 
 # 2-2 グループ化とグループ解除
 
-ここでグループ化と解除の挙動について少し深入り。
+ここでグループ化とグループ解除の挙動について少し深入りして調べる。
 
 ### 準備
 

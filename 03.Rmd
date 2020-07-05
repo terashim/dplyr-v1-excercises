@@ -1,0 +1,146 @@
+---
+title: "dplyr ver1 練習帳 - 3 filter によるデータの抽出"
+author: "terashim"
+date: "2020/7/5"
+output:
+  md_document:
+    variant: gfm
+---
+
+パッケージをロード
+
+```{r message=FALSE, warning=FALSE}
+library(nycflights13)
+```
+
+使用するデータセット
+
+```{r}
+flights
+```
+
+## filter() 関数名の重複
+
+`dplyr::filter()` はデータフレームを条件に合致する行に絞り込む関数。
+SQL の WHERE 句に相当する。
+
+`dplyr` パッケージをロードしなくても `filter()` 関数は (名前空間 `stats` で) 定義されている。
+`?stats::filter` や `?dplyr::filter` でそれぞれのヘルプを表示できる。
+
+パッケージをロードし忘れたまま `filter()` を使うと、関数は存在するのでエラーメッセージが `stats::filter` の使い方に関するものになる。そのため原因に気づきにくい:
+
+```{r error=TRUE}
+library(magrittr) # パイプ演算子 %>% をロード
+# dplyr をロードせずに filter() を実行
+flights %>% 
+  filter(carrier == "AA")
+```
+
+次のように常に名前空間を明示して `dplyr::filter` と呼び出していれば問題を回避できるが、表記が長くなってしまう。
+
+```{r eval=FALSE}
+flights %>% 
+  dplyr::filter(carrier == "AA")
+```
+
+## filter() でデータ抽出
+
+パッケージ `dplyr` をロードして
+
+```{r warning=FALSE, message=FALSE}
+library(dplyr)
+```
+
+データフレーム `flights` を列 `carrier` の値が `"UA"` であるような行に絞り込む
+
+```{r}
+flights %>% 
+  filter(carrier == "UA")
+```
+
+もとの336,776 行から 32,729 行に絞り込まれている。
+
+## 条件式について詳しく調べる
+
+`filter()` の挙動をよく理解するため、
+
+- 条件式 `carrier == "UA"` を評価した結果を表す列 `condition` を作成
+- 列 `carrier`, `condition` を先頭に移動
+
+の操作を行ってみる
+
+```{r}
+flights %>% 
+  mutate(condition = carrier == "UA") %>% 
+  relocate(carrier, condition)
+```
+
+列 `carrier` の値が `"UA"` であるような行では列 `condition` の値が `TRUE` に、そうでない行では列 `condition` の値が `FALSE` になっている。
+
+上記の `filter(carrier == "UA")` はこの `condition` が `TRUE` になるような行のみを残して絞り込む操作を意味している。
+
+## 条件式の論理演算
+
+航空会社がユナイテッド航空 (UA) であり、**かつ** 出発地がラガーディア空港 (LGA) であるような行を抽出
+
+```{r}
+flights %>% 
+  filter(carrier == "UA" & origin == "LGA")
+```
+
+航空会社がユナイテッド航空 (UA) であるか、**または** 出発地が LGA であるような行を抽出
+
+```{r}
+flights %>% 
+  filter(carrier == "UA" | origin == "LGA")
+```
+
+## 論理演算子の注意
+
+上の条件式で論理演算子 `&` の代わりに `&&` を使用すると結果はゼロ件になる
+
+```{r}
+flights %>% 
+  filter(carrier == "UA" && origin == "LGA")
+```
+
+演算子 `&` はベクトルの長さを変えない
+
+```{r}
+c(FALSE, TRUE, TRUE) & c(FALSE, TRUE, FALSE)
+```
+
+これに対して、演算子 `&&` はベクトルの長さを１にする
+
+```{r}
+c(FALSE, TRUE, TRUE) && c(FALSE, TRUE, FALSE)
+```
+
+演算子 `&&` は `if` 文の条件式など制御構文で利用されることを想定しているので、長さ１の論理ベクトルになる。
+式 `x && y` で `x` や `y` が長さ２以上のベクトルだった場合は、２番目以降の要素は無視される。
+
+上の例では、まず
+
+```{r}
+flights$carrier == "UA" && flights$origin == "LGA"
+```
+
+が評価された後、
+
+```{r}
+flights %>% 
+  filter(FALSE)
+```
+
+が評価される。`FALSE` は長さ１のベクトルであるが、各行の判定では次の列 `condition` ように値が複製される
+
+```{r}
+flights %>%
+  mutate(condition = FALSE) %>%
+  relocate(condition)
+```
+結果、すべての行についての条件判定が `FALSE` となるため、`filter()` の出力はゼロ行のデータフレームとなる。
+
+dplyr 利用時に限らず、論理演算子 `&`, `|` と `&&`, `||` との違いはしばしばR初学者に混乱をもたらす。
+
+dplyr の操作では他にも **ベクトルの長さが変わる計算が含まれる処理では意図しない結果になりやすい** ので注意が必要になる。

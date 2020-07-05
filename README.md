@@ -14,9 +14,13 @@ dplyr バージョン 1.0.0 が正式にリリースされたので練習
 
 ## もくじ
 
-- [1 select と mutate](01.md)
-- [2-1 集計](02-1.md)
+- [1-1 `select` と `mutate`](01-1.md)
+- [1-2 `select` の仲間 - `rename` と `relocate`](01-2.md)
+- [2-1 `summarise` による集計](02-1.md)
 - [2-2 グループ化とグループ解除](02-2.md)
+- [3 `filter` によるデータの抽出](03.md)
+- [4 `arrange` による並べ替え](04.md)
+- [5 `left_join`, `inner_join` によるデータ結合](05.md)
 
 ---
 

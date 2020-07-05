@@ -1,0 +1,64 @@
+---
+title: "dplyr ver1 練習帳 - 4 `arrange` による並べ替え"
+author: "terashim"
+date: "2020/7/5"
+output:
+  md_document:
+    variant: gfm
+---
+
+`arrange()` はデータフレームの行を並べ替えるための関数である。
+SQL の ORDER BY に相当する。
+
+---
+
+## 準備
+
+パッケージをロード
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(nycflights13)
+```
+
+引き続き `flights` データセットを使用する
+
+```{r}
+flights
+```
+
+---
+
+## arrange() で並べ替え
+
+データ `flights` を距離 `distance` の短い順に並べ替える:
+
+```{r}
+flights %>% 
+  arrange(distance)
+```
+
+## 降順で並べ替え
+
+データ `flights` を距離 `distance` の長い順に並べ替える:
+
+```{r}
+flights %>% 
+  arrange(desc(distance))
+```
+
+このように、降順でソートするには, `desc()` (降順 = *desc*ending order の意) を使用する。
+
+数値の場合は `arrange(-distance)` のようにしても良いが文字列を降順にしたい場合は `-` 演算子が使えないので `desc()` が必要になる。
+常に `desc()` を使うようにしておくと間違いがない。
+
+## 複数キーによる並べ替え
+
+優先順に出発予定年 `year`, 月 `month`, 日 `day`, 時 `hour`, 分 `minute` のいずれも降順で並べ変える:
+
+```{r}
+flights %>% 
+  arrange(desc(year), desc(month), desc(day), desc(hour), desc(minute)) %>% 
+  relocate(hour, minute, .after = day) # 列 hour と列 minute を列 day の後に移動
+```
+
