@@ -1,0 +1,181 @@
+---
+title: "dplyr ver1 練習帳 - 6-1 ベクトルの長さと `summarise`, `mutate` の使い分け"
+author: "terashim"
+date: "2020/7/6"
+output:
+  md_document:
+    variant: gfm
+---
+
+# 6-1 ベクトルの長さと `summarise`, `mutate` の使い分け
+
+パッケージをロード
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+```
+
+## ベクトルの長さを変える関数と変えない関数
+
+```{r}
+x <- c(2, 3, 5, 8, 13, 21)
+y <- c(3, 1, 4, 1, 5, 9)
+```
+
+### ベクトルの長さを変えない操作の例
+
+`x` を10倍する
+
+```{r}
+x * 10
+```
+
+`x` と `y` との差を取る
+
+```{r}
+x - y
+```
+
+`x` と `y` とを比較する
+
+```{r}
+x < y
+```
+
+順位を付ける
+
+```{r}
+rank(x)
+```
+
+累積和を取る
+
+```{r}
+cumsum(x)
+```
+
+## ベクトルの長さを１にする関数
+
+合計値を取る
+
+```{r}
+sum(x)
+```
+
+平均値を取る
+
+```{r}
+mean(x)
+```
+
+最大値を取る
+
+```{r}
+max(y)
+```
+
+ベクトルの長さを取る
+
+```{r}
+length(y)
+```
+
+## その他の例
+
+```{r}
+# 長さ 6 から 2 へ変化
+range(x)
+```
+
+
+```{r}
+# 長さが 6 から 5 へ変化
+unique(y)
+```
+
+## 通常 `mutate` は長さを変えない操作で使う
+
+```{r}
+d <- tibble::tibble(x, y) 
+d
+```
+
+```{r}
+d %>% 
+  mutate(
+    x10 = x * 10,
+    diff = x - y,
+    x_lt_y = x < y
+  )
+```
+
+## 通常 `summarise` は長さを１にする操作で使う
+
+```{r}
+d %>% 
+  summarise(
+    sum_x = sum(x),
+    mean_x = mean(x),
+    max_y = max(y),
+    length_y = length(y)
+  )
+```
+
+SQLでは、長さを１にする関数のことを集約関数や集計関数（英語では aggregate function）と呼ぶことが多い。
+
+---
+
+## `mutate` で長さ１にする関数を使うと複製される
+
+```{r}
+d %>% 
+  mutate(
+    sum_x = sum(x),
+    mean_x = mean(x)
+  )
+```
+
+## 【v1.0 新機能】 `summarise` で長さを変えない関数を使っても良い
+
+dplyr 0.8 以前ではエラーになる
+
+```{r}
+d %>%
+  summarise(
+    x10 = x * 10,
+    diff = x - y
+  )
+```
+
+## `summarise` とベクトルの長さ
+
+同じ長さになる操作なら同時に使用して良い
+
+```{r}
+d %>% 
+  summarise(
+    range_x = range(x), # 長さ2
+    range_y = range(y)  # 長さ2
+  )
+```
+異なる長さのベクトルになる操作を同時に指定するとエラーが発生する
+
+```{r error=TRUE}
+# これはエラーになる
+d %>% 
+  summarise(
+    diff = x - y,      # 長さ6
+    range_y = range(y) # 長さ2
+  )
+```
+
+ただし長さ1の場合は例外で、他の列の長さに合わせて複製される
+
+```{r}
+d %>% 
+  summarise(
+    range_x = range(x), # 長さ2
+    mean_y = mean(y)    # 長さ1
+  )
+```
+

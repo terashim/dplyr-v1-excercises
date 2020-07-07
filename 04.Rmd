@@ -7,6 +7,8 @@ output:
     variant: gfm
 ---
 
+# 4 `arrange` による並べ替え"
+
 `arrange()` はデータフレームの行を並べ替えるための関数である。
 SQL の ORDER BY に相当する。
 

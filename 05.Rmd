@@ -7,6 +7,8 @@ output:
     variant: gfm
 ---
 
+# 5 `left_join`, `inner_join` によるデータ結合
+
 パッケージをロード
 
 ```{r message=FALSE, warning=FALSE}

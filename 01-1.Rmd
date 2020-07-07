@@ -1,11 +1,13 @@
 ---
-title: "dplyr ver1 練習帳 - 1-1 select と mutate"
+title: "dplyr ver1 練習帳 - 1-1 `select` と `mutate`"
 author: "terashim"
 date: "2020/7/1"
 output: 
   md_document:
     variant: gfm
 ---
+
+# 1-1 `select` と `mutate`
 
 ## パッケージのインストール
 

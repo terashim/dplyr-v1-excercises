@@ -1,11 +1,13 @@
 ---
-title: "dplyr ver1 練習帳 - 3 filter によるデータの抽出"
+title: "dplyr ver1 練習帳 - 3 `filter` によるデータの抽出"
 author: "terashim"
 date: "2020/7/5"
 output:
   md_document:
     variant: gfm
 ---
+
+# 3 `filter` によるデータの抽出
 
 パッケージをロード
 

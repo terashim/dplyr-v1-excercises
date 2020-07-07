@@ -1,5 +1,5 @@
 ---
-title: "dplyr ver1 練習帳 - 2-1 summarise による集計"
+title: "dplyr ver1 練習帳 - 2-1 `summarise` による集計"
 author: "terashim"
 date: "2020/7/1"
 output: 
@@ -7,7 +7,7 @@ output:
     variant: gfm
 ---
 
-# 2-1 集計
+# 2-1 `summarise` による集計"
 
 パッケージのロード
 

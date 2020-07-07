@@ -1,11 +1,13 @@
 ---
-title: "dplyr ver1 練習帳 - 1-2 select の仲間 - rename と relocate"
+title: "dplyr ver1 練習帳 - 1-2 `select` の仲間 - `rename` と `relocate`"
 author: "terashim"
 date: "2020/7/5"
 output: 
   md_document:
-    variant: markdown_github
+    variant: gfm
 ---
+
+# 1-2 `select` の仲間 - `rename` と `relocate`
 
 パッケージをロードする
 
