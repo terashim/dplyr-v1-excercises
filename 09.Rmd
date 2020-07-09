@@ -183,13 +183,13 @@ table2 %>%
 
 ---
 
-## "縦長過ぎる" データ
+## "縦長過ぎる" データ, tidy data とテーブル設計
 
 `table2` にはなんとなく "縦長過ぎる" 感じがある。
 この形式は
 [SQLアンチパターン](https://www.oreilly.co.jp/books/9784873115894/) の１つである **EAV (Entity-Attribute-Value) パターン** に似ている。
 
-一方 tidy data に相当する概念はSQLの世界には見当たらない。
+一方 tidy data に相当する概念はSQL（テーブル設計）の世界には見当たらない。
 
 以下 [わかりみSQL](https://booth.pm/ja/items/1576397) より引用
 
