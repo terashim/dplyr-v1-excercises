@@ -56,7 +56,7 @@ flights %>%
   count(carrier, origin, name = "n_flights")
 ```
 
-## 重複を除いて列挙
+## 重複を除いて列挙 - `distinct()`
 
 重複を除いてすべての値を列挙するには `distinct()` を使用する。
 これは SQL の SELECT DISTINCT に相当する。
