@@ -1,0 +1,93 @@
+---
+title: "dplyr ver1 練習帳 - 8 並べてくっつける `bind_rows` / `bind_cols`"
+author: "terashim"
+date: "2020/7/7"
+output:
+  md_document:
+    variant: gfm
+---
+
+# 8 並べてくっつける `bind_rows` / `bind_cols`
+
+パッケージをロード
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+```
+
+## `bind_rows()` 関数でデータフレームを縦につなげる
+
+`bind_rows()` の基本的な使い方としては、
+同じ列を持つ2つのデータフレームを縦につなげて１つのデータフレームを作成する。
+
+これは SQL の UNION ALL に相当する.
+
+```{r}
+d1 <- tibble::tibble(
+  name = c("サザエ", "カツオ"),
+  age = c(24, 11)
+)
+d2 <- tibble::tibble(
+  name = c("ワカメ", "タラ夫"),
+  age = c(9, 5)
+)
+d1
+d2
+bind_rows(d1, d2)
+```
+
+## `bind_rows()` では列が揃っていなくても良い
+
+SQL の UNION ALL と異なり、
+`bind_rows()` では結合するデータの間で互いに異なる列名の列があっても良い。
+
+```{r}
+d1 <- tibble::tibble(
+  name = c("サザエ", "カツオ"),
+  age = c(24, 11)
+)
+d2 <- tibble::tibble(
+  name = c("ワカメ", "タラ夫"),
+  gender = c("女", "男")
+)
+d1
+d2
+bind_rows(d1, d2)
+```
+
+`dplyr` をインストールしなくてもRで最初から使える関数に `rbind()` があるが、`rbind()` は互いに列が揃っていないとエラーになる
+
+```{r error=TRUE}
+rbind(d1, d2)
+```
+
+## `bind_cols()` 関数でデータフレームを横につなげる
+
+```{r}
+d1 <- tibble::tibble(
+  name = c("サザエ", "カツオ", "ワカメ"),
+  age = c(24, 11, 9)
+)
+d2 <- tibble::tibble(
+  gender = c("女", "男", "女")
+)
+d1
+d2
+bind_cols(d1, d2)
+```
+
+`bind_cols()` では互いに同じ行数のデータフレームしか結合できない（１行の場合は例外）。
+
+```{r error=TRUE}
+# 3行のデータフレーム
+d1 <- tibble::tibble(
+  name = c("サザエ", "カツオ", "ワカメ"),
+  age = c(24, 11, 9)
+)
+# 2行のデータフレーム
+d2 <- tibble::tibble(
+  gender = c("女", "男")
+)
+# これはエラーになる
+bind_cols(d1, d2)
+```

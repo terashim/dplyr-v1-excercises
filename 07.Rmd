@@ -1,0 +1,104 @@
+---
+title: "dplyr ver1 練習帳 - 7 カウント系の関数"
+author: "terashim"
+date: "2020/7/7"
+output:
+  md_document:
+    variant: gfm
+---
+
+# 7 カウント系の関数
+
+パッケージをロード
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(nycflights13)
+```
+
+## `n()` 関数
+
+行数を数える操作では関数 `n()` が基本となる。
+SQL の `COUNT()` に相当する.
+
+`flights` データの行数 = 航空便数を数える:
+
+```{r}
+flights %>% 
+  summarise(n_flights = n())
+```
+
+## `n()` 単体では使えない
+
+`summarise()` の外で `n()` を単体で使うことはできない
+
+```{r error=TRUE}
+n()
+```
+
+## グループ化してから `n()`
+
+航空会社 `carrier`, 出発地 `origin` ごとに便数を数える
+
+```{r}
+flights %>% 
+  group_by(carrier, origin) %>% 
+  summarise(n_flights = n())
+```
+
+## `count()` で省略できる
+
+上のような `group_by()`, `summarise()`, `n()` を組み合わせた集計は
+`count()` 関数１つで書くことができる
+
+```{r}
+flights %>% 
+  count(carrier, origin, name = "n_flights")
+```
+
+## 重複を除いて列挙
+
+重複を除いてすべての値を列挙するには `distinct()` を使用する。
+これは SQL の SELECT DISTINCT に相当する。
+
+`carrier`, `origin` の組み合わせを列挙するには次のようにする
+
+```{r}
+flights %>% 
+  distinct(carrier, origin)
+```
+
+## `n_distinct` で重複を除いた数をカウント
+
+`carrier`, `origin` の組み合わせが重複を除いて何通りあるかを調べるには
+
+```{r}
+flights %>% 
+  distinct(carrier, origin) %>% 
+  count()
+```
+
+のように列挙してから行数を数えても良いが、
+専用の関数 `n_distinct()` を使うと
+
+```{r}
+flights %>% 
+  summarise(
+    n = n_distinct(carrier, origin)
+  )
+```
+
+のように書ける。
+
+次のようにして航空会社、出発地、その組み合わせを同時に数えることもできる
+
+```{r}
+flights %>% 
+  summarise(
+    n_distinct_carriers = n_distinct(carrier),
+    n_distinct_origins = n_distinct(origin),
+    n_distinct_carriers_x_origins = n_distinct(carrier, origin)
+  )
+```
+
+

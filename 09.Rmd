@@ -1,0 +1,124 @@
+---
+title: "dplyr ver1 練習帳 - 9 縦横に変換する `pivot_longer` / `pivot_wider`"
+author: "terashim"
+date: "2020/7/9"
+output:
+  md_document:
+    variant: gfm
+---
+
+# 9 縦横に変換する `pivot_longer` / `pivot_wider`
+
+`pivot_longer` 関数と `pivot_wider` 関数は `dplyr` パッケージではなく `tidyr` パッケージに含まれる。
+
+パッケージをロード
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(tidyr)
+```
+
+## サンプルデータ - 結核件数
+
+```{r}
+table4a
+```
+
+`table4a` は次の３列からなる:
+
+- `country`: 国
+- `1999`: 1999年の結核患者数
+- `2000`: 1999年の結核患者数
+
+サンプルデータ `table4b` には患者数の代わりに人口が入っている
+
+```{r}
+table4b
+```
+
+３列の意味はそれぞれ
+
+- `country`: 国
+- `1999`: 1999年の人口
+- `2000`: 1999年の人口
+
+である。
+
+## `pivot_longer`
+
+`pivot_longer()` 関数は "横長" のデータを "縦長" に変換する.
+
+`table4a` では、 `1999`, `2000` の２列は列名が年を、値が患者数を表している.
+これを年を表す列 `year` と患者数を表す列 `cases` からなるデータフレームに変換する: 
+
+```{r}
+table4a %>% 
+  pivot_longer(
+    cols = c(`1999`, `2000`),
+    names_to = "year",
+    values_to = "cases"
+  )
+```
+
+人口データ `table4b` も `pivot_longer` で縦長に変形する:
+
+```{r}
+table4b %>% 
+  pivot_longer(
+    cols = c(`1999`, `2000`),
+    names_to = "year",
+    values_to = "population"
+  )
+```
+
+縦長に変形したデータは互いに `left_join` で結合して一つにまとめることができる
+
+```{r}
+cases <-
+  table4a %>% 
+  pivot_longer(
+    cols = c(`1999`, `2000`),
+    names_to = "year",
+    values_to = "cases"
+  )
+
+population <-
+  table4b %>% 
+  pivot_longer(
+    cols = c(`1999`, `2000`),
+    names_to = "year",
+    values_to = "population"
+  )
+
+cases %>% 
+  left_join(population, by = c("country", "year"))
+```
+
+このように変換することによって、各国・各年の結核件数と人口が同時に扱えるようになった。
+また列名 `cases`, `population` によって数値の意味がわかるようになった。
+
+`tidyr` パッケージにはこれと同じデータが `table1` として用意されている
+
+```{r}
+table1
+```
+
+このように整形されたデータを使うと、例えば人口１０万人あたりの結核患者数
+`cases_per_100k_ppl`
+を次のようにして計算できる。
+
+```{r}
+table1 %>% 
+  mutate(cases_per_100k_ppl = cases / population * 1e5)
+```
+
+[tidyverse](https://www.tidyverse.org/) プロジェクトでは、
+`table4a`, `table4b` のようなクロス集計表型のデータ形式と比べて、
+`table1` のような形式のデータを **tidy data** と呼び、
+これをベースとしたパッケージ群が開発されている。
+
+---
+
+## 参考
+
+西原史暁 (Fumiaki Nishihara) [整然データとは何か｜Colorless Green Ideas](https://id.fnshr.info/2017/01/09/tidy-data-intro/) 

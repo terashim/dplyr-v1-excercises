@@ -1,0 +1,131 @@
+---
+title: "dplyr ver1 練習帳 - 6-3 `rowwise` で行ごとに処理する"
+author: "terashim"
+date: "2020/7/7"
+output:
+  md_document:
+    variant: gfm
+---
+
+# 6-3 `rowwise` で行ごとに処理する
+
+パッケージをロード
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+```
+
+次のようなデータ `d` を考える:
+
+```{r}
+d <- tibble::tibble(
+  x = c(2, 3, 5, 8, 13, 21),
+  y = c(3, 1, 4, 1, 5, 9)
+)
+d
+```
+
+## `max` / `min` は全行の最大値/最小値を取る
+
+列 `x`, `y` を比較して大きい/小さいほうの数値を取りたいとき、以下のようにすると意図しない結果になる:
+
+```{r}
+d %>% 
+  mutate(
+    max = max(x, y),
+    min = min(x, y)
+  )
+```
+## グループ化してから `max` / `min` を取る
+
+2行ずつ３つにグループ分けしてから `max`, `min` を取ると、グループ内での最大値・最小値になる
+
+```{r}
+d %>% 
+  group_by(g = c(1,1,2,2,3,3)) %>% 
+  mutate(
+    max = max(x, y),
+    min = min(x, y)
+  )
+```
+
+## すべての行を別々にグループ化
+
+１行ずつ６グループに分けてから `max`, `min` を取ると、行ごとの最大値・最小値が取れるので、
+`pmax`, `pmin` と同じ計算ができる。
+
+```{r}
+d %>% 
+  group_by(g = 1:6) %>% 
+  mutate(
+    max = max(x, y),
+    min = min(x, y)
+  )
+```
+
+## `rowwise()` で全行を分ける
+
+`rowwise()` を使うと１行ごとにグループ分けされたのと同じ状態になる。
+
+```{r}
+d %>% 
+  rowwise() %>% 
+  mutate(
+    max = max(x, y),
+    min = min(x, y)
+  )
+```
+
+## "rowwise" されたデータの構造
+
+`rowwise()` を適用したデータに対して `groups()` でグループ化の状態を見ようとしてもうまくいかない
+
+```{r}
+d %>% 
+  rowwise() %>% 
+  groups()
+```
+
+`rowwise()` を適用されたデータには `"rowwise_df"` クラスが追加されている
+
+```{r}
+d %>% 
+  rowwise() %>% 
+  class()
+```
+
+`group_by()` の場合と比較すると
+
+```{r}
+d %>% 
+  group_by(g = 1:6) %>% 
+  class()
+```
+
+こちらは `"grouped_df"` クラスになっている。
+
+`"rowwise_df"` クラスは `ungroup()` で解除される
+
+```{r}
+d %>% 
+  rowwise() %>% 
+  ungroup() %>% 
+  class()
+```
+
+## `rowwise` の使い所
+
+`pmax`, `pmin` のようにベクトル化された関数が存在する場合はそのほうが高速なことが多いのでそちらを使うほうが良い。
+
+パッケージのヘルプ `help(rowwise)` には次のような例が挙げられている:
+ 
+```{r}
+df <- tibble(x = runif(6), y = runif(6), z = runif(6))
+df %>% rowwise() %>% mutate(m = mean(c(x, y, z)))
+```
+`mean` 関数を適用して `x`, `y`, `z` の平均値を取っている。
+これは `m` = `x + y + z / 3` とするのと同じことである。
+扱う列の数がもっと多いときには便利かもしれない。
+
+ヘルプには他にも `across` やネストしたデータと組み合わせて使う例が与えられており、
+そのような高度な使い方をする際により役に立つかもしれない。

@@ -23,6 +23,10 @@ dplyr バージョン 1.0.0 が正式にリリースされたので練習
 - [5 `left_join`, `inner_join` によるデータ結合](05.md)
 - [6-1 ベクトルの長さと `summarise`, `mutate` の使い分け](06-1.md)
 - [6-2 間違えやすい問題](06-2.md)
+- [6-3 `rowwise` で行ごとに処理](06-3.md)
+- [7 カウント系の関数](07.md)
+- [8 並べてくっつける `bind_rows` / `bind_cols`](08.md)
+- [9 縦横に変換する `pivot_longer` / `pivot_wider`](09.md)
 
 ---
 
