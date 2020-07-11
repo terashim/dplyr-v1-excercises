@@ -27,6 +27,7 @@ dplyr バージョン 1.0.0 が正式にリリースされたので練習
 - [7 カウント系の関数](07.md)
 - [8 並べてくっつける `bind_rows` / `bind_cols`](08.md)
 - [9 縦横に変換する `pivot_longer` / `pivot_wider`](09.md)
+- [10 "動的な" 列選択 `tidyselect` ヘルパー関数群](10.md)
 
 ---
 

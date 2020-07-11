@@ -1,0 +1,104 @@
+---
+title: 'dplyr ver1 練習帳 - 10 "動的な" 列選択 `tidyselect` ヘルパー関数群'
+author: "terashim"
+date: "2020/7/11"
+output:
+  md_document:
+    variant: gfm
+---
+
+# 10 "動的な" 列選択 `tidyselect` ヘルパー関数群
+
+パッケージをロード
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(nycflights13)
+```
+
+
+`dplyr` v1.0.0 をロードすると、[`tidyselect`](https://tidyselect.r-lib.org/) パッケージに含まれるヘルパー関数群がインポートされる。
+
+ヘルパー関数を利用すると `select()` 関数で選択する列を "動的に" 指定することができる。
+
+ここでは
+
+- `where()`
+- `starts_with()`
+- `ends_with()`
+- `contains()`
+- `mathces()`
+- `any_of()`
+
+を取り上げる。
+
+
+## 【v1.0新機能】 `where` は「何々であるような列」を選択するために使用する.
+
+`select()` と `where()` で `flights` データから文字列型であるような列を選択
+
+```{r}
+flights %>% 
+  select(where(is.character))
+```
+
+SQLのWHERE句（`filter()` に相当）とは異なるので少し違和感がある。
+
+`is.character()` は各列に適用すると `TRUE` または `FALSE` を返す。 `where()` にはこのような関数を与えられる。
+
+```{r}
+is.character(flights$year)
+is.character(flights$carrier)
+```
+
+## 複合条件で列を選択
+
+`flights` データの中から、数値型で、かつ最大値が 100 以下であるような列を選択
+
+```{r}
+flights %>% 
+  select(where(~ is.numeric(.x) && max(.x, na.rm = TRUE) < 100))
+```
+
+## 〜〜で始まる列名の列を選択 - `starts_with()`
+
+```{r}
+flights %>% 
+  select(starts_with("dep"))
+```
+
+## 〜〜で終わる列名の列を選択 - `ends_with()`
+
+```{r}
+flights %>% 
+  select(ends_with("time"))
+```
+
+## 〜〜に部分一致する列名の列を選択 - `contains()`
+
+```{r}
+flights %>% 
+  select(contains("dep"))
+```
+
+## 正規表現で〜〜マッチする列名の列を選択 - `matches()`
+
+```{r}
+flights %>% 
+  select(matches("^(dep|arr)"))
+```
+## もし〜〜という列名があれば選択 - `any_of()`
+
+`select()` で存在しない列を指定するとエラーが発生する
+
+```{r error=TRUE}
+flights %>% 
+  select(hour, minute, second)
+```
+
+ヘルパー関数 `any_of()` を利用すると、列名が存在しないときは無視するようにできる
+
+```{r}
+flights %>% 
+  select(any_of(c("hour", "minute", "second")))
+```
