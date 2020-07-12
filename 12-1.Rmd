@@ -1,0 +1,93 @@
+---
+title: 'dplyr ver1 練習帳 - 12-1 ウィンドウ関数 その１ ランキング関数'
+author: "terashim"
+date: "2020/7/12"
+output:
+  md_document:
+    variant: gfm
+---
+
+# 12-1 ウィンドウ関数 その１ ランキング関数
+
+パッケージをロード
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(nycflights13)
+```
+
+## SQL における関数の分類
+
+SQLでは関数や演算子を入力行数と出力行数で分類して次のように呼ぶことが多い.
+
+- 通常の関数や演算子 : 行数を維持する. 各行内で計算する.
+- 集約関数 または 集計関数 (aggregation function) : 複数行からなるグループを1行にまとめる.
+- 分析関数 (analytic function) または ウィンドウ関数 (window function): 行数を維持する. 計算時に**他の行を参照する.**
+
+BigQuey では、分析関数をさらに次のように分類している:
+
+- ナビゲーション関数
+- 番号付け関数
+- 集計分析関数
+
+(参考: ["標準 SQL での分析関数の概要  |  BigQuery  |  Google Cloud"](https://cloud.google.com/bigquery/docs/reference/standard-sql/analytic-function-concepts?hl=ja))
+
+Rを使っているときに分析関数と言っても何のことだかわからないので、ウィンドウ関数と呼ぶ。
+
+## `dplyr` におけるウィンドウ関数
+
+`dplyr` のドキュメントの中にウィンドウ関数に関する項目がある:
+
+[Window functions • dplyr](https://dplyr.tidyverse.org/articles/window-functions.html)
+
+この中ではウィンドウ関数を
+
+- ランキング関数
+- オフセット関数
+- 集計関数
+
+に分類している。さらに集計関数は
+
+- 累積集計関数
+- ローリング集計関数
+- リサイクル集計関数
+
+に分かれるとしている。
+
+---
+
+## ランキング関数
+
+`dplyr` では、ランキング関数
+`row_number()`, `min_rank()`, `dense_rank()`
+が定義されている。
+
+`row_number()` と `min_rank()` は、 PostgreSQL や Oracle Database などで使える ROW_NUMBER 関数 と DENSE_RANK 関数に対応している。
+`min_rank()` は SQLの RANK 関数に対応する（`rank()` はRで最初から定義されているため使えなかった）。
+
+- `row_number()` 値が重複する場合は、要素の並び順に高順位とする。
+- `min_rank()` 値が重複する場合は、同じ順位とする。次の順位は重複した数だけ飛ばす。
+- `dense_rank()` 値が重複する場合は、同じ順位とする。次の順位は飛ばさない。
+
+```{r}
+x <- c(1, 1, 2, 2, 2)
+
+row_number(x)
+min_rank(x)
+dense_rank(x)
+```
+
+## 例: 出発地ごとに出発時刻順のランキングを付ける
+
+- `flights` を元データとする。
+- 計算量を減らすため冒頭 1,000 件に絞り込む。
+- 出発地 `origin` ごとに出発時刻 `time_hour` の昇順でランク付けした順位を列 `time_oder` とする。
+- わかりやすいように列 `origin`, `time_order`, `time_hour` を左に持ってくる。
+
+```{r}
+flights %>% 
+  slice_head(n = 1000) %>% 
+  group_by(origin) %>% 
+  mutate(time_order = min_rank(time_hour)) %>% 
+  relocate(origin, time_order, time_hour)
+```

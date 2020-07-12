@@ -1,0 +1,57 @@
+---
+title: 'dplyr ver1 練習帳 - 12-4 ウィンドウ関数 その４ ローリング集計関数'
+author: "terashim"
+date: "2020/7/12"
+output:
+  md_document:
+    variant: gfm
+---
+
+# 12-4 ウィンドウ関数 その４ ローリング集計関数
+
+パッケージをロード
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(nycflights13)
+```
+
+各日において過去数日間の移動平均を取るなど、
+決まった幅のウィンドウにおける集計値を取る操作をローリング集計と呼ぶ。
+
+ローリング集計関数は `dplyr` には含まれていない。
+代わりに [`RcppRoll`](https://cran.r-project.org/package=RcppRoll) などのパッケージを利用する。
+
+## `RcppRoll` を使う
+
+パッケージをインストールする
+
+```{r eval=FALSE}
+install.packages("RcppRoll")
+```
+
+パッケージをロードする
+
+```{r}
+library(RcppRoll)
+```
+
+例えば, `roll_meanr()` は各要素から n 個前まで遡るウィンドウ内での平均値を取る:
+
+```{r}
+roll_meanr(c(3, 1, 4, 1, 5, 9, 2, 6), n = 3)
+```
+
+## `dplyr` と `RcppRoll` によるローイング集計の例 - 毎時気温データから6時間平均気温を作る
+
+- 毎時気象観測値データ `weather` を元データとする
+- 観測地点 `origin` ごとにグループ化する
+- 気温 `temp` を元に、各時点における過去６時間の平均気温を計算した列 `rolling_mean_temp` を作成する。順序付けには時刻 `time_hour` を用いる。
+- わかりやすいように列 `origin`, `time_hour`, `temp`, `rolling_temp` を左に持ってくる
+
+```{r}
+weather %>% 
+  group_by(origin) %>% 
+  mutate(rolling_temp = with_order(time_hour, roll_meanr, temp, n = 6)) %>% 
+  relocate(origin, time_hour, temp, rolling_temp)
+```

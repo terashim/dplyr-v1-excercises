@@ -1,0 +1,157 @@
+---
+title: 'dplyr ver1 練習帳 - 11 複数の列をまとめて変更・集計 - `across()`'
+author: "terashim"
+date: "2020/7/11"
+output:
+  md_document:
+    variant: gfm
+---
+
+# 11 複数の列をまとめて変更・集計 - `across()`'
+
+`dplyr` バージョン 1.0.0 から、 [`across()` 関数](https://dplyr.tidyverse.org/reference/across.html) が加わった.
+これを `summaise()` や `mutate()` と組み合わせて使うと、一つの関数を複数の列に適用することができる。
+
+---
+
+パッケージをロード
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(nycflights13)
+```
+
+
+## 課題
+
+`flights` データを元として `carrier` ごとにグループ化し。次の量を集計する
+
+- `total_dep_delay`: `dep_delay` の合計値
+- `avg_dep_delay`: `dep_delay` の平均値
+- `total_arr_delay`: `arr_delay` の合計値
+- `avg_arr_delay`: `arr_delay` の平均値
+- `total_air_time`: `air_time` の合計値
+- `avg_air_time`: `air_time` の平均値
+
+## `across()` を使わないとき
+
+`across()` を使わなくても、次のようにすれば集計を行うことができる
+
+```{r}
+flights %>% 
+  group_by(carrier) %>% 
+  summarise(
+    total_dep_delay = sum(dep_delay, na.rm = TRUE),
+    avg_dep_delay = mean(dep_delay, na.rm = TRUE),
+    total_arr_delay = sum(arr_delay, na.rm = TRUE),
+    avg_arr_delay = mean(arr_delay, na.rm = TRUE),
+    total_air_time = sum(air_time, na.rm = TRUE),
+    avg_air_time = mean(air_time, na.rm = TRUE)
+  )
+```
+
+## `across()` の使い方
+
+`across()` を使うと、複数の列に同じ集計関数をまとめて適用することができる
+
+```{r}
+flights %>% 
+  group_by(carrier) %>% 
+  summarise(
+    across(
+      c(dep_delay, arr_delay, air_time),
+      function(x) { mean(x, na.rm = TRUE) }
+    )
+  )
+```
+
+## 複数の関数を適用
+
+複数の列に複数の関数を適用したい場合、
+`across` の第２引数に関数をリスト型にして与える:
+
+```{r}
+flights %>% 
+  group_by(carrier) %>% 
+  summarise(
+    across(
+      c(dep_delay, arr_delay, air_time),
+      list(
+        sum = function(x) { sum(x, na.rm = TRUE) },
+        mean = function(x) { mean(x, na.rm = TRUE) }
+      )
+    )
+  )
+```
+
+## 列名の規約を指定
+
+`across()` で複数の関数を適用する場合、デフォルトでは `<元の列名>_<関数リストのキー>` の形の列名が作成される。これを変更したい場合は `.names` 引数に列名のフォーマットを与える:
+
+```{r}
+flights %>% 
+  group_by(carrier) %>% 
+  summarise(
+    across(
+      c(dep_delay, arr_delay, air_time),
+      list(
+        total = function(x) { sum(x, na.rm = TRUE) },
+        avg = function(x) { mean(x, na.rm = TRUE) }
+      ),
+      .names = "{fn}_{col}"
+    )
+  )
+```
+
+## 代替された関数 `summarise_at()`
+
+dplyr v0.8 以前では、複数の列をまとめて集計するために `summarise_at()` や `summarise_if()` などの関数が使われていた
+
+
+```{r}
+flights %>% 
+  group_by(carrier) %>% 
+  summarise_at(
+    c("dep_delay", "arr_delay", "air_time"),
+    list(
+      total = function(x) { sum(x, na.rm = TRUE) },
+      avg = function(x) { mean(x, na.rm = TRUE) }
+    )
+  )
+```
+
+現在 `summarise_at` や `summarise_if` は代替された (superseded) ステータスになっており、
+`across` が推奨となっている。
+
+## `mutate()` と `across()` の組み合わせ
+
+`across()` を `summarise()` ではなく `mutate()` と組み合わせることもできる.
+
+例: `flights` データのうち、 `dep_delay`, `arr_delay`, `air_time` を分単位から秒単位に変換する
+
+```{r}
+flights %>% 
+  mutate(
+    across(
+      c(dep_delay, arr_delay, air_time),
+      function(x) { x * 60 }
+    )
+  )
+```
+
+`mutate_at` や `mutate_if` も `dplyr` バージョン 1.0.0 で代替された (superseded) ステータスとなった.
+
+## 〜〜であるような列に対して〇〇の関数を適用する - `acoss()` と `where()` の組み合わせ
+
+`acoss()` と `where()` を組み合わせることで
+「〜〜であるような列に対して〇〇の関数を適用する」
+という操作が可能になる。
+
+例えば 「`flights` データのうち文字列型であるような列を因子型に変換する」 という操作は次のように書ける:
+
+```{r}
+flights %>% 
+  mutate(across(where(is.character), as.factor))
+```
+
+

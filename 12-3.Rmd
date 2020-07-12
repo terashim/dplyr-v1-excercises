@@ -1,0 +1,87 @@
+---
+title: 'dplyr ver1 練習帳 - 12-3 ウィンドウ関数 その３ 累積集計関数'
+author: "terashim"
+date: "2020/7/12"
+output:
+  md_document:
+    variant: gfm
+---
+
+# 12-3 ウィンドウ関数 その３ 累積集計関数
+
+パッケージをロード
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(nycflights13)
+```
+
+## 累積集計関数
+
+Rに最初から入っている累積関数としては、累積和 `cumsum()` や累積最大値/最小値 `cummax()`, `cummin()` がある。
+
+```{r}
+cumsum(1:10)
+```
+
+```{r}
+cummax(c(3, 1, 4, 1, 5, 9, 2))
+```
+
+
+```{r}
+cummin(c(3, 1, 4, 1, 5, 9, 2))
+```
+
+`dplyr` には累積論理積 `cumall()`, 累積論理和 `cumany()`, 累積平均 `cummean()` が用意されている。
+
+**`dplyr` バージョン 1.0.0 では `cummean` の挙動がおかしい。**
+GitHubでは既に対応されており次のリリースでは修正される模様 (<https://github.com/tidyverse/dplyr/issues/5287>)。
+
+```{r}
+cummean(c(1, 2, 3)) # バージョン 1.0.0 ではおかしな結果になる
+```
+
+
+論理値ベクトルを試合の勝敗で喩えると、`cumall()` は "初戦から連勝が続いているかどうか" を表す
+
+```{r}
+cumall(c(TRUE, TRUE, FALSE, TRUE, FALSE))
+```
+
+`cumany()` は "過去１回でも勝ったことがあるかどうか" を表す
+
+```{r}
+cumany(c(FALSE, FALSE, FALSE, TRUE, FALSE))
+```
+
+## 例: 日ごと・出発地ごとの累計出発遅延時間
+
+- `flights` を元データとする
+- 計算量を減らすため、冒頭 1,000 行に絞り込む
+- 年 `year`, 月 `month`, 日 `day`, 出発地 `origin` でグループ化する 
+- 出発時刻 `time_hour` の昇順での順位を列 `flight_order` とする
+- 出発時刻 `time_hour` 順に遅延時間 `dep_delay` の累積和を取ったものを列 `cum_dep_delay` とする
+- わかりやすいように次の列を左に持ってくる: `flight_order`, `cum_dep_delay`, `dep_delay`, `origin`, `time_hour`, `year`, `month`, `day`
+
+```{r}
+flights %>% 
+  slice_head(n = 1000) %>% 
+  group_by(year, month, day, origin) %>% 
+  mutate(
+    flight_order = row_number(time_hour),
+    cum_dep_delay = with_order(order_by = time_hour, fun = cumsum, dep_delay)
+  ) %>% 
+  relocate(flight_order, cum_dep_delay, dep_delay, origin, time_hour, year, month, day)
+```
+
+ここで、行の並び順は変えずに累積和を取る順序を指定するために
+`with_order()` を利用している。
+
+```{r}
+time <- c(1, 5, 3, 2)
+x <- c(1, 2, 3, 4)
+cumsum(x)
+with_order(time, cumsum, x)
+```
+

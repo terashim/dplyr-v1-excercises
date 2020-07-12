@@ -1,0 +1,49 @@
+---
+title: 'dplyr ver1 練習帳 - 12-2 ウィンドウ関数 その２ オフセット関数'
+author: "terashim"
+date: "2020/7/12"
+output:
+  md_document:
+    variant: gfm
+---
+
+# 12-2 ウィンドウ関数 その２ オフセット関数
+
+パッケージをロード
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(nycflights13)
+```
+
+## オフセット関数 `lead()`, `lag()`
+
+`dplyr` にはベクトルの要素を "ずらす" ための関数として、 `lead()`, `lag()` が用意されている。
+`lead` は後続の要素を、`lag` は先行する要素を取ることを意味する。
+
+```{r}
+1:10
+lead(1:10)
+lag(1:10)
+lead(1:10, n = 2)
+lag(1:10, n = 3)
+```
+
+`lag()` は時系列データで１期前（例えば、前月）の数値を取る際によく使う。
+
+## データフレームで次の/前の～～を取る
+
+データフレームの変形で `lead()` を `mutate()` と併用する例を示す。
+
+航空便データ `flights` を元として、
+出発地 `origin` ごとに 出発時刻 `time_hour` 順に並べたときの、次の便のフライト番号を `next_flight` としたデータを作成する
+
+```{r}
+flights %>% 
+  group_by(origin) %>% 
+  mutate(next_flight = lead(flight, order_by = time_hour)) %>% 
+  relocate(flight, next_flight, origin, time_hour)
+```
+
+`group_by` を組み合わせることで、**グループ内での順序に基づく処理**が行われる。
+
