@@ -129,6 +129,4 @@ purrr::map_dfr(
 data_models %>% 
   mutate(glanced = purrr::map(models, glance)) %>% 
   unnest(glanced)
-
-?nest
 ```
