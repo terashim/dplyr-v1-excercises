@@ -1,0 +1,187 @@
+---
+title: 'dplyr ver1 練習帳 - 12 行番号で取り出す - `slice()` 系関数'
+author: "terashim"
+date: "2020/7/16"
+output:
+  md_document:
+    variant: gfm
+---
+
+# 12 行番号で取り出す - `slice()` 系関数
+
+```{r}
+library(dplyr)
+library(nycflights13)
+```
+
+## 10行目を取り出す
+
+```{r}
+flights %>% slice(10)
+```
+
+これは `flights[10, ]` と同じ
+
+## 2 ~ 5 行目を取り出す
+
+```{r}
+flights %>% slice(2:5)
+```
+
+これは `flights[2:5, ]` と同じ
+
+## ○○ ごとに △△ 行目を取り出す
+
+グループ化されたデータフレームの場合、`slice()` を使うとグループごとに指定の行番号の行を抽出することができる。
+これは角括弧 `[ , ]`  では実現できない。
+
+例) `origin` ごとにグループ化してからそれぞれ 1000行目, 2000行目, 3000行目を取り出す:
+
+```{r}
+flights %>% 
+  group_by(origin) %>% 
+  slice(c(1000, 2000, 3000)) %>% 
+  relocate(origin)
+```
+
+わかりやすいように `relocate()` で列 `origin` を左に持ってきた
+
+## 先頭・末尾の○行を取り出す
+
+`slice_head()` は先頭の、 `slice_tail()` は末尾の行を取り出す
+
+```{r}
+flights %>% slice_head(n = 5)
+```
+
+```{r}
+flights %>% slice_tail(n = 5)
+```
+
+グループ化していないときは `head()`, `tail()` と同じである:
+
+```{r}
+flights %>% head(5)
+```
+
+```{r}
+flights %>% tail(5)
+```
+
+グループ化すると、グループごとに先頭・末尾の行を取り出すことができる
+
+```{r}
+flights %>% 
+  group_by(origin) %>% 
+  slice_head(n = 2) %>% 
+  relocate(origin)
+```
+
+```{r}
+flights %>% 
+  group_by(origin) %>% 
+  slice_tail(n = 2) %>% 
+  relocate(origin)
+```
+
+## 【v1.0 新機能】 先頭/末尾から ○○% の行を取り出す
+
+`flights` データ約33.7万行の中から、0.01 % （1万分の1）の割合で取り出す:
+
+```{r}
+flights %>% 
+  slice_head(prop = 0.0001)
+```
+末尾から 0.05% を取り出す:
+
+```{r}
+flights %>% 
+  slice_tail(prop = 0.0005)
+```
+
+グループ `origin` ごとに 0.01% ずつ取り出す
+
+```{r}
+flights %>% 
+  group_by(origin) %>% 
+  slice_head(prop = 0.0001) %>% 
+  relocate(origin)
+```
+
+## 【v1.0 新機能】 ランダムに○行取り出す
+
+`slice_sample()` は行をランダムに取り出す際に使用する。
+引数 `n` を与えるとその行数を取り出す。
+
+```{r}
+flights %>% slice_sample(n = 3)
+```
+
+過去のバージョンでは `sample_n()` 関数が使われていたが、代替された superseded 扱いになっている
+
+```{r}
+flights %>% sample_n(3)
+```
+
+## 【v1.0 新機能】 ランダムに○%取り出す
+
+
+`slice_sample()` で引数 `prop` を与えるとその割合の行数を取り出す。
+
+`fligths` データ約33.7万行のうち、1万分の1をランダムに抽出する:
+
+```{r}
+flights %>% slice_sample(prop = 0.0001)
+```
+過去バージョンでは `sample_frac()` 関数とされていたが、代替された superseded ステータスとなった。
+
+```{r}
+flights %>% sample_frac(prop = 0.0001)
+```
+
+
+## グループごとにランダム抽出
+
+`slice_sample()` もグループ化されたデータフレームに適用するとグループごとの抽出となる
+
+```{r}
+flights %>%
+  group_by(origin) %>%
+  slice_sample(n = 3) %>%
+  relocate(origin)
+```
+
+## ランキング上位・下位○行を抽出
+
+`slice_min()`, `slice_max()` 関数を使うと、指定の列の値の昇順/降順で指定の順位までの行を抽出できる
+
+### 出発遅延時間 `dep_delay` の長かった航空便上位5件のデータを抽出
+
+```{r}
+flights %>% 
+  slice_max(dep_delay, n = 5)
+```
+
+### 出発地 `origin` ごとに、飛行時間 `air_time` の短かった航空便それぞれ上位3件のデータを抽出
+
+```{r}
+flights %>% 
+  group_by(origin) %>% 
+  slice_min(air_time, n = 3, with_ties = FALSE) %>% 
+  relocate(origin, air_time)
+```
+
+ここで、`with_ties = FALSE` オプションを指定しているため、
+同順位 (tie) で4行以上のデータが3位以内に入る場合は結果が3行までに切り捨てられる。
+
+
+### `top_n()` は非推奨となった
+
+`top_n()` は昇順なのか降順なのかわかりにくい（実際は降順）ため、dplyr バージョン 1.0.0 で代替された (superseded) 関数の扱いとなった。
+
+```{r}
+flights %>% 
+  top_n(dep_delay, n = 3) %>% 
+  relocate(origin, dep_delay)
+```
+
